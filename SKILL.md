@@ -29,7 +29,9 @@ Use when the user wants a Serenity-style workflow, an interactive industry-chain
    - `id`: short stable id
    - `domainId`: parent business domain
    - `layer`: layer name and order
-   - `role`: what this node does in plain language
+   - `summary`: required. Write 2-4 detailed plain-language sentences, not a one-line label. Explain the physical object/process/software layer, where it sits upstream/downstream, what it connects to, and what it is not. Use the same depth as a good "glass substrate / TGV" explanation: definition, value-chain position, and boundary versus nearby concepts.
+   - `role`: required. What this node does in the system. Explain its practical function in demand release, performance, yield, cost, reliability, integration, or deployment speed.
+   - `replaces`: required. What it replaces, supplements, or competes with. If there is no direct substitute, say so. If replacement is conditional, state whether it is a near-term supplement, partial replacement, long-term architecture shift, or only a route option.
    - `constraint`: why it may become a bottleneck
    - `evidence`: `confirmed`, `management-claim`, `inferred`, or `needs-verification`
    - `companies`: overseas, local-market, and private names if relevant
@@ -68,6 +70,23 @@ Define market status consistently:
 - `repricing`: the market has started noticing and repricing the node, but the thesis may not be fully reflected yet. Verify orders, margins, capacity, or filings.
 - `crowded`: consensus or narrative-heavy. Use as demand proof, not necessarily as the best entry point.
 - `too-early`: may matter later, but commercialization, evidence, or timing is not ready.
+
+Node detail panels must explain nodes as research objects, not ticker labels. By default every node should render:
+
+- `What it is`: detailed definition of the layer/object/process, including where it sits in the value chain and what it is not.
+- `What it does`: the practical system role, such as enabling throughput, bandwidth, yield, power delivery, reliability, cost reduction, or deployment speed.
+- `What it replaces or supplements`: direct substitute, partial substitute, complementary route, or no direct replacement. If adoption depends on customer architecture/qualification, say that explicitly.
+- `Why it may bottleneck`: the scarce-layer mechanism, preferably tied to physics, process control, equipment, materials, certification, or capacity.
+- `Related public-stock performance`: when local-market mappings name public stocks, show `3 months`, `6 months`, and `1 year` price performance, plus `as-of date`, `source`, and adjustment basis (`qfq`/`hfq`/`unadjusted`). Treat performance as context, not as a recommendation.
+
+Market data source priority for A-share/HK performance:
+
+- Prefer GitHub/open-source libraries when available: `AKShare` (`ak.stock_zh_a_hist(..., adjust="qfq")`) or `efinance` (`ef.stock.get_quote_history(..., fqt=1)`).
+- If those fail due to network/proxy/source instability, use a direct public source such as Sina daily K line as a fallback, but label it clearly as unadjusted.
+- Do not let market-data retries block the canvas. If a batch request stalls, times out repeatedly, or a background retry produces no usable rows, stop that attempt, switch data source, and mark any still-missing ticker as `待查` / `pending verification`.
+- Never invent missing performance data. If all sources fail for a ticker, write `待查` / `pending verification` and include the source path to retry.
+
+For emerging architecture shifts such as glass substrates/TGV, CPO, silicon photonics, HBM4, advanced substrates, or new power/cooling routes, be explicit about timing: current bottleneck, candidate bottleneck, future route option, or narrative-only.
 
 Swimlane, heatmap, table, subway-map, and galaxy views are auxiliary comparison views, not the default primary navigation, unless the user explicitly asks for them.
 

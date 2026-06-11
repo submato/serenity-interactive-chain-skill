@@ -1,41 +1,713 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI Industry Serenity Map</title>
-<style>
-:root{color-scheme:dark;--bg:#0f1115;--panel:#161a22;--panel2:#10141b;--text:#e7eaf0;--muted:#9aa3b2;--line:#2a3040;--accent:#7cc4ff;--green:#7bd88f;--yellow:#ffd166;--red:#ff8a8a;}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}.wrap{max-width:1440px;margin:0 auto;padding:28px}h1{font-size:28px;margin:0 0 6px}h2{font-size:22px;margin:0}h3{font-size:14px;text-transform:none;margin:0 0 6px;color:var(--muted)}p{margin:0}.subtitle{color:var(--muted);margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}.stat b{font-size:22px;display:block}.stat span{color:var(--muted);font-size:12px}.layout{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(430px,1.35fr);gap:14px;align-items:start}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}.card header{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 14px;font-weight:700;z-index:2}.card .body{padding:14px}.tree{display:flex;flex-direction:column;gap:4px}.nodeBtn{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--text);text-align:left;border-radius:10px;padding:8px 10px;cursor:pointer}.nodeBtn.active{border-color:var(--accent);background:#192335}.nodeLine{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.label{font-weight:650}.pill{border:1px solid var(--line);border-radius:999px;padding:1px 7px;font-size:11px;color:var(--muted);white-space:nowrap}.pill.green{color:var(--green);border-color:rgba(123,216,143,.45)}.pill.yellow{color:var(--yellow);border-color:rgba(255,209,102,.45)}.pill.red{color:var(--red);border-color:rgba(255,138,138,.45)}.section{padding:12px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}.path{font-size:12px;color:var(--muted)}.stocks{display:flex;flex-direction:column;gap:8px}.stock{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.stockName{font-size:13px;font-weight:700;margin-right:2px}.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.actions button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:8px}.children{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.children button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:8px;cursor:pointer}@media(max-width:900px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Industry Mindmap</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101112;
+      --panel: #17191b;
+      --panel-2: #1d2023;
+      --text: #e8e8e8;
+      --muted: #9aa0a6;
+      --faint: #6f767d;
+      --line: #2a2f34;
+      --accent: #5aa2ff;
+      --green: #62c189;
+      --amber: #d49a55;
+      --red: #d86d6d;
+      --blue: #74a9ff;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .page { max-width: 1480px; margin: 0 auto; padding: 18px; }
+    header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 14px; }
+    h1, h2, h3 { margin: 0; line-height: 1.25; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+    p { margin: 0; }
+    .muted { color: var(--muted); }
+    .faint { color: var(--faint); }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    input, select {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 8px 10px;
+      font: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input { min-width: 240px; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(90,162,255,.18); }
+    .tree-row:hover { border-color: var(--accent); }
+    button {
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+      background-color: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 7px 12px;
+      letter-spacing: .01em;
+      transition: border-color .15s ease, background-color .15s ease, color .15s ease, transform .05s ease;
+    }
+    button:hover { border-color: var(--accent); color: #fff; background-color: #232830; }
+    button:active { transform: translateY(1px); }
+    button:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(90,162,255,.22); }
+    button.btn-primary {
+      color: #eaf2ff;
+      background-color: rgba(90,162,255,.16);
+      border-color: rgba(90,162,255,.45);
+    }
+    button.btn-primary:hover { background-color: rgba(90,162,255,.26); border-color: var(--accent); color: #fff; }
+    button.btn-ghost {
+      background: none;
+      background-color: transparent;
+      color: var(--muted);
+      border-color: transparent;
+    }
+    button.btn-ghost:hover { color: var(--text); border-color: var(--line); background-color: var(--panel-2); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+    .stat, .notice, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .stat { padding: 14px; }
+    .stat strong { display: block; font-size: 24px; line-height: 1; margin-bottom: 6px; }
+    .notice { padding: 12px 14px; background: #17202a; margin-bottom: 14px; }
+    .layout { display: grid; grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.35fr); gap: 14px; align-items: start; }
+    .panel { overflow: hidden; }
+    .panel-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-body { padding: 12px; }
+    .tree { max-height: calc(100vh - 220px); overflow: auto; padding-right: 4px; }
+    .tree-row {
+      width: 100%;
+      text-align: left;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 7px 9px;
+      margin: 4px 0;
+    }
+    .tree-row.selected { border-color: var(--accent); background: var(--panel-2); }
+    .twisty { width: 16px; color: var(--muted); flex: 0 0 auto; }
+    .label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 1px 7px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .success { color: var(--green); border-color: rgba(98,193,137,.35); }
+    .warning { color: var(--amber); border-color: rgba(212,154,85,.35); }
+    .info { color: var(--blue); border-color: rgba(116,169,255,.35); }
+    .danger { color: var(--red); border-color: rgba(216,109,109,.35); }
+    .section { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+    .detail-grid { display: grid; gap: 14px; }
+    .path { font-size: 12px; color: var(--muted); }
+    .title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .stock-list { display: grid; gap: 8px; }
+    .stock {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #141618;
+    }
+    .children { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .copy { color: var(--accent); }
+    mark { background: rgba(90,162,255,.25); color: var(--text); border-radius: 3px; padding: 0 2px; }
+    @media (max-width: 900px) {
+      .layout, .stats { grid-template-columns: 1fr; }
+      .tree { max-height: none; }
+      header { flex-direction: column; }
+      input { width: 100%; }
+      .actions, .children { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>AI Industry Serenity Map</h1>
-  <p class="subtitle">静态 HTML 导出版：点击左侧节点查看详情、A股映射和近期涨跌幅。仅作产业链研究，不构成投资建议。</p>
-  <div class="stats" id="stats"></div>
-  <div class="layout">
-    <section class="card"><header>脑图导航</header><div class="body"><div class="tree" id="tree"></div></div></section>
-    <section class="card"><header>节点详情</header><div class="body" id="detail"></div></section>
+  <div class="page">
+    <header>
+      <div>
+        <h1>AI Industry Mindmap</h1>
+        <p class="muted">独立 HTML 版：可在浏览器打开，文字可选中、复制、搜索，不依赖 Cursor Canvas。</p>
+      </div>
+      <div class="toolbar">
+        <input id="search" placeholder="搜索节点、公司、A股、验证项..." />
+        <select id="heatFilter">
+          <option value="all">全部热度</option>
+          <option value="underfollowed">仍冷门</option>
+          <option value="repricing">重估中</option>
+          <option value="hot">已拥挤</option>
+          <option value="early">过早</option>
+        </select>
+        <button class="btn-ghost" id="expandAll">全部展开</button>
+        <button class="btn-ghost" id="collapseAll">折叠</button>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><strong id="domainCount">-</strong><span class="muted">一级业务域</span></div>
+      <div class="stat"><strong id="nodeCount">-</strong><span class="muted">已拆节点</span></div>
+      <div class="stat"><strong id="coldCount">-</strong><span class="muted">仍冷门节点</span></div>
+      <div class="stat"><strong id="stockCount">-</strong><span class="muted">A股动量样本</span></div>
+    </div>
+
+    <div class="notice">
+      左侧树用于导航；右侧查看节点详情、A股映射、近期涨跌幅和验证路径。仅作产业链研究，不构成投资建议。
+    </div>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <strong>脑图导航</strong>
+          <span class="muted" id="visibleCount"></span>
+        </div>
+        <div class="panel-body">
+          <div class="tree" id="tree"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <strong>节点详情</strong>
+          <button class="copy" id="copyNode">复制节点摘要</button>
+        </div>
+        <div class="panel-body detail-grid" id="detail"></div>
+      </section>
+    </main>
+
+    <section class="panel" id="stockDetailSection" style="margin-top:14px">
+      <div class="panel-head">
+        <strong>个股分析详情</strong>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="stockSearch" placeholder="搜索股票 / 代码 / 节点 / 结论..." style="min-width:220px" />
+          <span class="muted" id="stockCountLabel"></span>
+          <button class="btn-ghost" id="stockExpandAll">全部展开</button>
+          <button class="btn-ghost" id="stockCollapseAll">全部收起</button>
+        </div>
+      </div>
+      <div class="panel-body" id="stockDetailBody"></div>
+    </section>
   </div>
-</div>
-<script id="data" type="application/json">{"tree":[{"id":"root","label":"AI Industry","kind":"root","summary":"从 agentic AI 需求出发，向上游拆到算力、HBM、CoWoS、互连、电力、液冷和应用分发。","why":"AI 不能只按模型或应用看，要先判断哪些物理层扩不出来，哪些只是拥挤叙事。","companies":"NVIDIA、AMD、TSMC、SK hynix、Micron、Broadcom、Marvell、Vertiv、Eaton、Microsoft、Google、Salesforce。","aShare":"按节点映射：先进封装、光模块、液冷、电力设备、服务器 ODM、应用软件分别验证。","evidence":"reported","heat":"repricing","verify":"先拆业务域，再逐层验证订单、产能、价格、良率、capex 和客户认证。"},{"id":"D1-ai-factory","parentId":"root","label":"AI Factory / 云端算力","kind":"domain","summary":"训练、后训练、推理和主权 AI 集群，把需求转成 GPU/ASIC rack 和数据中心 capex。","why":"最显眼是 GPU，但真正卡点往往是 HBM、CoWoS、rack 交付和电力并网。","companies":"NVIDIA、AMD、Microsoft、Google、AWS、Meta、Oracle、CoreWeave。","aShare":"工业富联、浪潮信息、中际旭创、新易盛、天孚通信、沪电股份、生益科技。","evidence":"strong","heat":"hot","verify":"看 hyperscaler capex、NVIDIA data center/networking revenue、GPU 租赁价格和集群利用率。"},{"id":"D1-N1-hbm","parentId":"D1-ai-factory","label":"HBM3e / HBM4","kind":"node","summary":"高带宽内存负责喂饱 GPU/ASIC，决定训练和推理吞吐能否释放。","why":"堆叠层数、TSV、功耗、良率、客户认证和封装协同让 HBM 比普通 DRAM 更难扩。","companies":"SK hynix、Micron、Samsung、Advantest、Teradyne、ASMPT。","aShare":"长电科技、通富微电、华海诚科、雅克科技、精测电子等需逐项验证真实 HBM 敞口。","evidence":"strong","heat":"repricing","verify":"看 HBM4 qualification、合约价、产能 sold-out 程度、NVIDIA/SK hynix 长约和良率。"},{"id":"D1-N1-S1-stack","parentId":"D1-N1-hbm","label":"堆叠 / TSV / 测试","kind":"subnode","summary":"多层 DRAM 通过 TSV 和先进封装连接，坏 die 和热应力会放大良率损失。","why":"层数越高，良率、散热和测试越难，16-hi 和 HBM4E 会继续抬高门槛。","companies":"SK hynix、Micron、Samsung、Advantest、Teradyne。","aShare":"测试、封装材料和先进封装配套公司需要用客户认证和收入占比验证。","evidence":"inferred","heat":"underfollowed","verify":"核设备订单、材料认证、封测客户和是否进入 HBM 量产链。"},{"id":"D1-N2-cowos","parentId":"D1-ai-factory","label":"CoWoS / 先进封装","kind":"node","summary":"把 GPU/ASIC die 与 HBM 通过硅中介层、基板和高密度互连变成可交付 accelerator。","why":"这是 AI 硬件总闸门之一；没有 CoWoS，先进制程 die 和 HBM 都不能变成产品。","companies":"TSMC、ASE、Amkor、Ibiden、Unimicron、Shinko。","aShare":"先进封装、载板、ABF、封装材料、减薄/键合/检测设备是主要映射方向。","evidence":"strong","heat":"repricing","verify":"看 TSMC CoWoS 月产能、客户 allocation、OSAT 外包比例、设备交期和 lead time。"},{"id":"D1-N2-S1-substrate","parentId":"D1-N2-cowos","label":"ABF / 先进基板","kind":"subnode","summary":"大尺寸 AI package 需要高层数、高良率、高平整度基板。","why":"封装面积变大后，基板良率、交期和客户认证会成为 CoWoS 放量的隐性限制。","companies":"Ibiden、Unimicron、Shinko、AT&S、Nan Ya PCB。","aShare":"沪电股份、深南电路、兴森科技、生益科技等需分清 PCB、载板和材料敞口。","evidence":"reported","heat":"underfollowed","verify":"看 ABF 产能、AI 客户认证、资本开支、毛利率和交付周期。"},{"id":"D1-N2-S1-L0-ai-package","parentId":"D1-N2-S1-substrate","label":"L0 大尺寸 AI package 需求","kind":"subnode","summary":"GPU/ASIC + HBM + interposer 的封装面积、I/O 数和供电密度抬高了载板规格。","why":"需求不是普通服务器 PCB 放量，而是少数超大 package 把层数、平整度、翘曲和交期同时推到上限。","companies":"NVIDIA、AMD、Broadcom、Marvell、TSMC、Ibiden、Unimicron、Shinko。","aShare":"先从沪电股份、深南电路、兴森科技、生益科技跟踪 AI 服务器/载板敞口，但要拆清 PCB 与 IC substrate。","evidence":"reported","heat":"repricing","verify":"看 GPU/ASIC package 尺寸变化、CoWoS 产能目标、substrate allocation 和客户 long-term agreement。"},{"id":"D1-N2-S1-L1-build-up","parentId":"D1-N2-S1-substrate","label":"L1 Build-up 层数 / 线宽线距","kind":"subnode","summary":"ABF 载板通过多层 build-up 结构承载高密度走线、供电和信号完整性。","why":"层数越高、线宽线距越细，良率越容易被微短路、开路、层间对位和翘曲吃掉。","companies":"Ibiden、Unimicron、Shinko、AT&S、Nan Ya PCB、Kinsus。","aShare":"兴森科技、深南电路等需验证是否进入高端 FC-BGA / ABF 客户认证与量产，而非只停留在传统载板。","evidence":"reported","heat":"underfollowed","verify":"看高层数 FC-BGA 占比、AI 客户认证、良率爬坡、capex 项目和单价/毛利变化。"},{"id":"D1-N2-S1-L2-abf-film","parentId":"D1-N2-S1-substrate","label":"L2 ABF 膜材 / 低 CTE 树脂","kind":"subnode","summary":"ABF film 是 build-up dielectric 的核心材料，影响绝缘、热膨胀、翘曲和可靠性。","why":"材料配方、客户认证和长期可靠性测试周期长，替代不是简单扩产就能完成。","companies":"Ajinomoto、Resonac、Mitsubishi Gas Chemical、Taiyo Ink。","aShare":"生益科技、华正新材、联瑞新材、壹石通等更偏树脂、填料或覆铜板材料映射，需要验证是否对应 ABF 体系。","evidence":"inferred","heat":"underfollowed","verify":"看 Ajinomoto 供需评论、低 CTE/低损耗材料认证、客户导入周期和材料涨价传导。"},{"id":"D1-N2-S1-L3-microvia-plating","parentId":"D1-N2-S1-substrate","label":"L3 微孔 / 电镀铜 / 表面处理","kind":"subnode","summary":"激光微孔、化学铜、电镀铜和表面处理决定层间互连的导通率和长期可靠性。","why":"AI package 的电流密度和高频信号让孔壁质量、铜厚均匀性、空洞和污染控制变成良率杀手。","companies":"Atotech/MKS、Uyemura、MacDermid Alpha、JCU、C. Uyemura。","aShare":"光华科技、上海新阳、天承科技等只能作为 PCB/封装湿电子化学品方向跟踪，需核客户和高端载板收入。","evidence":"inferred","heat":"underfollowed","verify":"看化学铜/电镀添加剂客户、载板厂扩产配套订单、孔可靠性指标和失效分析披露。"},{"id":"D1-N2-S1-L4-equipment","parentId":"D1-N2-S1-substrate","label":"L4 LDI / 激光钻孔 / 压合设备","kind":"subnode","summary":"高端载板需要激光钻孔、直接成像、真空压合、DES 和精密蚀刻等设备链。","why":"设备精度和 throughput 直接决定扩产速度；若设备交期拉长，载板厂 capex 不能立刻变成有效产能。","companies":"Orbotech/KLA、DISCO、Mitsubishi Electric、Hitachi High-Tech、SCREEN、Ushio。","aShare":"大族数控、芯碁微装、帝尔激光、东威科技等可跟踪 PCB/载板设备升级，但需验证先进 IC 载板客户占比。","evidence":"inferred","heat":"underfollowed","verify":"看载板设备订单、交期、客户验证层级、是否覆盖 IC substrate 而非普通 HDI PCB。"},{"id":"D1-N2-S1-L5-warpage-test","parentId":"D1-N2-S1-substrate","label":"L5 翘曲控制 / AOI / 可靠性测试","kind":"subnode","summary":"大尺寸薄型载板要控制翘曲、尺寸稳定性、微缺陷和热循环可靠性。","why":"封装面积扩大后，轻微翘曲或微缺陷就会放大成贴装、键合和长期可靠性问题。","companies":"KLA、Onto Innovation、Camtek、Hitachi High-Tech、Cohu。","aShare":"精测电子、矩子科技、华兴源创等更偏检测设备映射，需要确认是否进入高端载板或先进封装检测。","evidence":"inferred","heat":"underfollowed","verify":"看 AOI/量测设备在 IC substrate 客户导入、warpage spec、热循环失效率和退货/返工率。"},{"id":"D1-N2-S1-L6-capacity-qualification","parentId":"D1-N2-S1-substrate","label":"L6 产能爬坡 / 客户认证","kind":"subnode","summary":"载板产能只有通过 GPU/ASIC 客户认证、良率稳定和交付验证后才算有效供给。","why":"AI 载板是典型认证卡点：新增厂房和设备不等于可供 NVIDIA/AMD/ASIC 客户使用的产能。","companies":"Ibiden、Unimicron、Shinko、AT&S、Nan Ya PCB、TSMC ecosystem。","aShare":"A股公司若没有明确高端载板客户认证和批量收入，更多是远期选项而非当下卡点。","evidence":"reported","heat":"repricing","verify":"看客户认证公告、稼动率、良率、AI 订单占比、交期和载板厂资本开支是否转成收入。"},{"id":"D2-custom-asic","parentId":"root","label":"Custom AI ASIC","kind":"domain","summary":"Google TPU、AWS Trainium、Microsoft Maia、Meta MTIA 和 OpenAI custom chip。","why":"ASIC 的逻辑不是替代所有 GPU，而是吃掉可预测、高频、大规模的推理或内部工作负载。","companies":"Broadcom、Marvell、Google、AWS、Microsoft、Meta、MediaTek、Alchip。","aShare":"直接映射较弱，更多在 EDA/IP、封测、载板、PCB、光互连和电源配套。","evidence":"reported","heat":"repricing","verify":"看长期 design win、2nm 节点、外售云实例、客户 capex 从 GPU 向 ASIC 的迁移。"},{"id":"D2-N1-design","parentId":"D2-custom-asic","label":"ASIC 设计伙伴","kind":"node","summary":"Broadcom/Marvell 把 hyperscaler 的架构意图落成可制造芯片。","why":"顶级 custom silicon design service 供应商少，客户关系长，SerDes、封装和量产协同难复制。","companies":"Broadcom、Marvell、MediaTek、Alchip。","aShare":"EDA/IP 和封测配套可以跟踪，但不能简单等同 Broadcom/Marvell。","evidence":"reported","heat":"repricing","verify":"看 Google/OpenAI/Meta/AWS/Microsoft 项目披露、合同周期、客户集中度和 tape-out 节奏。"},{"id":"D3-power-cooling","parentId":"root","label":"Power + Cooling","kind":"domain","summary":"AI 数据中心从服务器问题变成电力工程、热管理和并网节奏问题。","why":"AI campus 的 MW/GW 级负载让 power-first site selection 取代传统 fiber-first 逻辑。","companies":"Vertiv、Eaton、Schneider、GE Vernova、Siemens Energy、Constellation、Vistra。","aShare":"金盘科技、思源电气、特变电工、许继电气、英维克、申菱环境、高澜股份。","evidence":"strong","heat":"repricing","verify":"看并网批复、PPA、变压器订单、液冷 CDU 订单、PUE 和机柜功率密度。"},{"id":"D3-N1-grid","parentId":"D3-power-cooling","label":"电网接入 / PPA","kind":"node","summary":"给 AI campus 提供可用 MW/GW 级电力连接，是数据中心能不能开工的前置条件。","why":"AI 建设按月迭代，输电和并网按年审批；排队、变压器和电网稳定性成为硬约束。","companies":"Constellation、Vistra、GE Vernova、Eaton、Schneider、Siemens Energy。","aShare":"金盘科技、思源电气、特变电工、许继电气、平高电气。","evidence":"strong","heat":"underfollowed","verify":"看大型 PPA、behind-the-meter 项目、变压器交付周期和数据中心选址公告。"},{"id":"D3-N2-liquid","parentId":"D3-power-cooling","label":"液冷 / CDU / 冷板","kind":"node","summary":"Direct-to-chip 液冷、CDU、冷板、泵阀和管路让高功率 AI rack 稳定运行。","why":"GB/VR rack 功率密度上升后，风冷越来越难支撑，液冷可靠性变成交付条件。","companies":"Vertiv、Delta、Schneider、Auras、CoolIT、Boyd。","aShare":"英维克、申菱环境、高澜股份、同飞股份、飞荣达、银轮股份。","evidence":"strong","heat":"repricing","verify":"看液冷 attach rate、CDU 订单、客户认证、毛利率和漏液可靠性记录。"},{"id":"D4-interconnect","parentId":"root","label":"Interconnect / 光互连","kind":"domain","summary":"AI cluster 规模扩大后，网络带宽、延迟和功耗成为系统级约束。","why":"800G 进入主流，1.6T 放量，CPO/ELSFP 可能从 2027 后成为新卡点。","companies":"Broadcom、Marvell、NVIDIA networking、Coherent、Lumentum、Ciena、Innolight。","aShare":"中际旭创、新易盛、天孚通信、光迅科技、华工科技、剑桥科技。","evidence":"reported","heat":"repricing","verify":"看 800G/1.6T shipment mix、AI networking revenue、CPO/ELSFP 订单和客户认证。"},{"id":"D4-N1-16t","parentId":"D4-interconnect","label":"800G -> 1.6T 光模块","kind":"node","summary":"承载 GPU/ASIC 集群内部大规模 east-west traffic。","why":"功耗、DSP、激光器、光模块良率和高速电接口共同决定 1.6T 放量速度。","companies":"Marvell、Broadcom、Coherent、Lumentum、Innolight、Eoptolink、Accelink。","aShare":"中际旭创、新易盛、天孚通信、光迅科技、华工科技。","evidence":"reported","heat":"repricing","verify":"看 1.6T pluggable mass shipment、客户份额、价格曲线和毛利率。"},{"id":"D4-N2-cpo","parentId":"D4-interconnect","label":"CPO / ELSFP","kind":"node","summary":"把光 I/O 移近 switching/compute silicon，降低高速互连功耗和铜互连损耗。","why":"商业化仍早，但 scale-up network 如果放量，外置激光源和 CPO 可能变成新市场。","companies":"Broadcom、NVIDIA ecosystem、TSMC COUPE、Coherent、Lumentum、Ciena/Nubis。","aShare":"A股映射要谨慎，先看激光器、光芯片、封装和客户验证，而不是泛 CPO 概念。","evidence":"inferred","heat":"early","verify":"看 2027 scale-up design win、ELSFP 订单转收入、CPO port forecast 和维修/良率问题。"},{"id":"D5-rack-odm","parentId":"root","label":"Rack-scale ODM","kind":"domain","summary":"Foxconn、Quanta、Wistron 等从服务器代工升级为 AI supercomputer 整柜交付。","why":"NVL72/GB300/VR rack 不是普通服务器，液冷、供电、网络拓扑和 burn-in 都提高门槛。","companies":"Foxconn、Quanta、Wistron、Wiwynn、Supermicro、Dell、HPE。","aShare":"工业富联、浪潮信息、中科曙光、沪电股份、生益科技、胜宏科技、立讯精密。","evidence":"reported","heat":"hot","verify":"看 GB/VR rack shipment、单柜 ASP、毛利率、客户多源化和液冷整柜良率。"},{"id":"D6-agent-apps","parentId":"root","label":"Agentic Apps / 应用","kind":"domain","summary":"把 AI 从聊天工具变成销售、客服、代码、法务、财务等可计费工作流。","why":"应用层需求真实，但卡点不是供应不足，而是分发、数据闭环、可信执行和推理成本。","companies":"Microsoft、Google、Salesforce、ServiceNow、Adobe、OpenAI、Anthropic。","aShare":"金山办公、科大讯飞、用友网络、泛微网络、致远互联等需要看续费和真实 AI 收入。","evidence":"strong","heat":"hot","verify":"看 Agent ARR、付费 seat、净留存、work unit、毛利率和推理成本下降。"}],"stockPerformance":[],"detailOverrides":{},"evidenceText":{"strong":"强证据","reported":"报道/披露","inferred":"推断","weak":"待核实"},"heatText":{"hot":"已拥挤","repricing":"重估中","underfollowed":"仍冷门","early":"过早"},"kindText":{"root":"生态","domain":"业务域","node":"节点","subnode":"子层"},"defaultSelected":"D1-N2-cowos"}</script>
-<script>
-const D = JSON.parse(document.getElementById('data').textContent);
-let selectedId = D.defaultSelected || 'root';
-const byId = new Map(D.tree.map(n => [n.id,n]));
-const childrenOf = id => D.tree.filter(n => n.parentId === id);
-const detailFor = node => ({...node, ...(D.detailOverrides[node.id] || {})});
-const chokeFor = node => node.heat === 'underfollowed' && node.evidence !== 'weak' ? '当下卡点' : node.heat === 'repricing' ? '候选卡点' : node.heat === 'hot' ? '已定价卡点' : '远期卡点';
-const pillClass = v => String(v).startsWith('-') ? 'red' : String(v).startsWith('+') ? 'green' : '';
-function pathTo(id){const out=[];let cur=byId.get(id);while(cur){out.unshift(cur);cur=cur.parentId?byId.get(cur.parentId):null}return out}
-function related(node){return D.stockPerformance.filter(s => node.aShare && node.aShare.includes(s.name))}
-function renderStats(){document.getElementById('stats').innerHTML=[['一级业务域',childrenOf('root').length],['已拆节点',D.tree.filter(n=>n.kind==='node'||n.kind==='subnode').length],['仍冷门节点',D.tree.filter(n=>n.heat==='underfollowed').length],['行情口径','新浪日K未复权']].map(([k,v])=>'<div class="stat"><b>'+v+'</b><span>'+k+'</span></div>').join('')}
-function renderTreeNode(node, depth=0){const kids=childrenOf(node.id);const active=node.id===selectedId;return '<button class="nodeBtn '+(active?'active':'')+'" style="padding-left:'+(10+depth*18)+'px" data-id="'+node.id+'"><div class="nodeLine"><span class="label">'+node.label+'</span><span class="pill">'+(D.kindText[node.kind]||node.kind)+'</span><span class="pill">'+(D.heatText[node.heat]||node.heat)+'</span><span class="pill">'+(D.evidenceText[node.evidence]||node.evidence)+'</span><span class="pill">'+chokeFor(node)+'</span></div></button>'+kids.map(k=>renderTreeNode(k,depth+1)).join('')}
-function renderTree(){document.getElementById('tree').innerHTML=renderTreeNode(byId.get('root'));document.querySelectorAll('.nodeBtn').forEach(b=>b.onclick=()=>{selectedId=b.dataset.id;renderTree();renderDetail();})}
-function sec(title, body){return '<div class="section"><h3>'+title+'</h3><p>'+body+'</p></div>'}
-function renderDetail(){const node=byId.get(selectedId)||D.tree[0];const d=detailFor(node);const stocks=related(node);let html='<div class="section"><p class="path">'+pathTo(node.id).map(n=>n.label).join(' / ')+'</p><h2>'+node.label+'</h2><p class="path">'+node.id+' · '+node.kind+'</p></div>';html+=sec('它是什么',d.summary||'');if(d.role)html+=sec('它的作用',d.role);if(d.replaces)html+=sec('替代 / 补充谁',d.replaces);html+=sec('为什么可能卡脖子',node.why||'');html+=sec('海外 / 私有标的',node.companies||'');html+=sec('A股 / 港股映射',node.aShare||'');if(stocks.length){html+='<div class="section"><h3>关联A股近期涨跌幅</h3><p class="path">3个月、半年、1年为最新交易日相对对应日附近收盘价涨跌幅；数据源为新浪日 K，未复权。</p><div class="stocks">'+stocks.map(s=>'<div class="stock"><span class="stockName">'+s.name+' '+s.code+'</span><span class="pill '+pillClass(s.m3)+'">3个月 '+s.m3+'</span><span class="pill '+pillClass(s.m6)+'">半年 '+s.m6+'</span><span class="pill '+pillClass(s.y1)+'">1年 '+s.y1+'</span><span class="path">截至 '+s.asOf+' · '+s.source+'</span></div>').join('')+'</div></div>'}html+=sec('怎么验证',node.verify||'');if(node.source)html+=sec('来源与证据等级',node.source);if(node.falsification)html+=sec('证伪条件',node.falsification);const kids=childrenOf(node.id);if(kids.length){html+='<div class="section"><h3>下一层</h3><div class="children">'+kids.map(k=>'<button data-child="'+k.id+'">'+k.label+'</button>').join('')+'</div></div>'}document.getElementById('detail').innerHTML=html;document.querySelectorAll('[data-child]').forEach(b=>b.onclick=()=>{selectedId=b.dataset.child;renderTree();renderDetail();})}
-renderStats();renderTree();renderDetail();
-</script>
+
+  <script>
+    const evidenceText = { strong: "强证据", reported: "报道/披露", inferred: "推断", weak: "待核实" };
+    const heatText = { hot: "已拥挤", repricing: "重估中", underfollowed: "仍冷门", early: "过早" };
+    const chokeText = { current: "当下卡点", candidate: "候选卡点", priced: "已定价卡点", future: "远期卡点" };
+    const kindText = { root: "生态", domain: "业务域", node: "节点", subnode: "子层" };
+
+    const stockPerformance = [
+      { name: "工业富联", code: "601138.SH", m3: "+41.6%", m6: "+9.9%", y1: "+265.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "浪潮信息", code: "000977.SZ", m3: "-3.7%", m6: "-7.6%", y1: "+13.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "中际旭创", code: "300308.SZ", m3: "+124.3%", m6: "+94.7%", y1: "+987.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "新易盛", code: "300502.SZ", m3: "+104.6%", m6: "+87.5%", y1: "+679.0%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "天孚通信", code: "300394.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "源杰科技", code: "688498.SH", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "光库科技", code: "300620.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "仕佳光子", code: "688313.SH", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "沪电股份", code: "002463.SZ", m3: "+90.2%", m6: "+91.0%", y1: "+287.5%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "生益科技", code: "600183.SH", m3: "+142.1%", m6: "+130.9%", y1: "+431.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "长电科技", code: "600584.SH", m3: "+67.3%", m6: "+104.0%", y1: "+128.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "通富微电", code: "002156.SZ", m3: "+37.8%", m6: "+71.1%", y1: "+168.7%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "华海诚科", code: "688535.SH", m3: "-2.9%", m6: "+15.7%", y1: "+56.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "雅克科技", code: "002409.SZ", m3: "+26.7%", m6: "+56.3%", y1: "+107.9%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "精测电子", code: "300567.SZ", m3: "+34.9%", m6: "+159.6%", y1: "+217.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "深南电路", code: "002916.SZ", m3: "+55.2%", m6: "+92.7%", y1: "+318.7%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "兴森科技", code: "002436.SZ", m3: "+60.6%", m6: "+74.2%", y1: "+217.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "沃格光电", code: "603773.SH", m3: "+291.2%", m6: "+372.2%", y1: "+586.6%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "帝尔激光", code: "300776.SZ", m3: "+101.1%", m6: "+185.6%", y1: "+210.2%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "大族激光", code: "002008.SZ", m3: "+83.7%", m6: "+218.4%", y1: "+429.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "天承科技", code: "688603.SH", m3: "+112.4%", m6: "+128.5%", y1: "+177.6%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "京东方A", code: "000725.SZ", m3: "待复算", m6: "待复算", y1: "待复算", asOf: "2026-06-11盘中", source: "新浪/搜狐公开行情；6月11日盘中5.83元，原涨幅需按收盘日线复算", aliases: ["京东方"] },
+      { name: "华正新材", code: "603186.SH", m3: "+127.2%", m6: "+225.4%", y1: "+465.7%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "联瑞新材", code: "688300.SH", m3: "+101.1%", m6: "+184.8%", y1: "+301.9%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "壹石通", code: "688733.SH", m3: "+33.7%", m6: "+19.7%", y1: "+123.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "光华科技", code: "002741.SZ", m3: "+39.3%", m6: "+28.2%", y1: "+59.3%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "上海新阳", code: "300236.SZ", m3: "+31.2%", m6: "+63.5%", y1: "+158.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "大族数控", code: "301200.SZ", m3: "+102.0%", m6: "+147.4%", y1: "+686.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "芯碁微装", code: "688630.SH", m3: "+125.8%", m6: "+216.0%", y1: "+430.0%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "东威科技", code: "688700.SH", m3: "+134.6%", m6: "+154.0%", y1: "+134.9%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "矩子科技", code: "300802.SZ", m3: "+22.0%", m6: "+28.4%", y1: "+36.9%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "华兴源创", code: "688001.SH", m3: "+105.6%", m6: "+137.0%", y1: "+162.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "金盘科技", code: "688676.SH", m3: "-14.5%", m6: "+4.4%", y1: "+160.5%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "思源电气", code: "002028.SZ", m3: "-20.0%", m6: "+16.9%", y1: "+153.7%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "特变电工", code: "600089.SH", m3: "-28.2%", m6: "+5.0%", y1: "+100.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "许继电气", code: "000400.SZ", m3: "-34.2%", m6: "-12.4%", y1: "+2.4%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "易事特", code: "300376.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "英维克", code: "002837.SZ", m3: "-28.1%", m6: "-11.3%", y1: "+156.6%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "申菱环境", code: "301018.SZ", m3: "+3.0%", m6: "+83.9%", y1: "+192.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "高澜股份", code: "300499.SZ", m3: "-3.5%", m6: "+31.8%", y1: "+101.3%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "平高电气", code: "600312.SH", m3: "-24.7%", m6: "+11.1%", y1: "+20.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "同飞股份", code: "300990.SZ", m3: "-3.2%", m6: "+10.4%", y1: "+79.7%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "飞荣达", code: "300602.SZ", m3: "+19.5%", m6: "+45.6%", y1: "+121.7%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "银轮股份", code: "002126.SZ", m3: "-5.0%", m6: "+41.4%", y1: "+93.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "光迅科技", code: "002281.SZ", m3: "+168.4%", m6: "+216.6%", y1: "+372.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "华工科技", code: "000988.SZ", m3: "+31.1%", m6: "+93.5%", y1: "+244.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "剑桥科技", code: "603083.SH", m3: "+62.6%", m6: "+50.6%", y1: "+307.3%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "联特科技", code: "301205.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "博创科技", code: "300548.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "太辰光", code: "300570.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "长飞光纤", code: "601869.SH", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "罗博特科", code: "300757.SZ", m3: "待查", m6: "待查", y1: "待查", asOf: "待查", source: "待用 AKShare/东方财富复核" },
+      { name: "中科曙光", code: "603019.SH", m3: "-7.2%", m6: "-19.7%", y1: "+29.9%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "胜宏科技", code: "300476.SZ", m3: "+26.9%", m6: "+7.7%", y1: "+239.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "立讯精密", code: "002475.SZ", m3: "+49.1%", m6: "+14.4%", y1: "+117.2%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "金山办公", code: "688111.SH", m3: "-19.7%", m6: "-25.5%", y1: "-23.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "科大讯飞", code: "002230.SZ", m3: "-16.8%", m6: "-8.5%", y1: "-8.8%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "用友网络", code: "600588.SH", m3: "-21.1%", m6: "-19.4%", y1: "-25.3%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "泛微网络", code: "603039.SH", m3: "+3.8%", m6: "-8.5%", y1: "-28.9%", asOf: "2026-06-09", source: "新浪日K未复权" },
+      { name: "致远互联", code: "688369.SH", m3: "-8.4%", m6: "-9.7%", y1: "-23.1%", asOf: "2026-06-09", source: "新浪日K未复权" },
+    ];
+
+    const tree = [
+      { id: "root", label: "AI Industry", kind: "root", summary: "从 agentic AI 需求出发，向上游拆到算力、HBM、CoWoS、互连、电力、液冷和应用分发。", why: "AI 不能只按模型或应用看，要先判断哪些物理层扩不出来，哪些只是拥挤叙事。", companies: "NVIDIA、AMD、TSMC、SK hynix、Micron、Broadcom、Marvell、Vertiv、Eaton、Microsoft、Google、Salesforce。", aShare: "按节点映射：先进封装、光模块、液冷、电力设备、服务器 ODM、应用软件分别验证。", evidence: "reported", heat: "repricing", verify: "先拆业务域，再逐层验证订单、产能、价格、良率、capex 和客户认证。" },
+      { id: "D1-ai-factory", parentId: "root", label: "AI Factory / 云端算力", kind: "domain", summary: "训练、后训练、推理和主权 AI 集群，把需求转成 GPU/ASIC rack 和数据中心 capex。", why: "最显眼是 GPU，但真正卡点往往是 HBM、CoWoS、rack 交付和电力并网。", companies: "NVIDIA、AMD、Microsoft、Google、AWS、Meta、Oracle、CoreWeave。", aShare: "工业富联、浪潮信息、中际旭创、新易盛、天孚通信、沪电股份、生益科技。", evidence: "strong", heat: "hot", verify: "看 hyperscaler capex、NVIDIA data center/networking revenue、GPU 租赁价格和集群利用率。" },
+      { id: "D1-N1-hbm", parentId: "D1-ai-factory", label: "HBM3e / HBM4", kind: "node", summary: "高带宽内存负责喂饱 GPU/ASIC，决定训练和推理吞吐能否释放。", why: "堆叠层数、TSV、功耗、良率、客户认证和封装协同让 HBM 比普通 DRAM 更难扩。", companies: "SK hynix、Micron、Samsung、Advantest、Teradyne、ASMPT。", aShare: "长电科技、通富微电、华海诚科、雅克科技、精测电子等需逐项验证真实 HBM 敞口。", evidence: "strong", heat: "repricing", verify: "看 HBM4 qualification、合约价、产能 sold-out 程度、NVIDIA/SK hynix 长约和良率。" },
+      { id: "D1-N1-S1-stack", parentId: "D1-N1-hbm", label: "堆叠 / TSV / 测试", kind: "subnode", summary: "多层 DRAM 通过 TSV 和先进封装连接，坏 die 和热应力会放大良率损失。", why: "层数越高，良率、散热和测试越难，16-hi 和 HBM4E 会继续抬高门槛。", companies: "SK hynix、Micron、Samsung、Advantest、Teradyne。", aShare: "测试、封装材料和先进封装配套公司需要用客户认证和收入占比验证。", evidence: "inferred", heat: "underfollowed", verify: "核设备订单、材料认证、封测客户和是否进入 HBM 量产链。" },
+      { id: "D1-N2-cowos", parentId: "D1-ai-factory", label: "CoWoS / 先进封装", kind: "node", summary: "把 GPU/ASIC die 与 HBM 通过硅中介层、基板和高密度互连变成可交付 accelerator。", why: "这是 AI 硬件总闸门之一；没有 CoWoS，先进制程 die 和 HBM 都不能变成产品。", companies: "TSMC、ASE、Amkor、Ibiden、Unimicron、Shinko。", aShare: "先进封装、载板、ABF、封装材料、减薄/键合/检测设备是主要映射方向。", evidence: "strong", heat: "repricing", verify: "看 TSMC CoWoS 月产能、客户 allocation、OSAT 外包比例、设备交期和 lead time。" },
+      { id: "D1-N2-S1-substrate", parentId: "D1-N2-cowos", label: "ABF / 先进基板", kind: "subnode", summary: "大尺寸 AI package 需要高层数、高良率、高平整度基板。", why: "封装面积变大后，基板良率、交期和客户认证会成为 CoWoS 放量的隐性限制。", companies: "Ibiden、Unimicron、Shinko、AT&S、Nan Ya PCB。", aShare: "沪电股份、深南电路、兴森科技、生益科技等需分清 PCB、载板和材料敞口。", evidence: "reported", heat: "underfollowed", verify: "看 ABF 产能、AI 客户认证、资本开支、毛利率和交付周期。" },
+      { id: "D1-N2-S2-glass-substrate", parentId: "D1-N2-cowos", label: "玻璃基板 / TGV", kind: "subnode", summary: "玻璃基板是下一代先进封装载体路线：用低翘曲、高平整度、低损耗的玻璃 core，配合 TGV 和 RDL 再布线，把 GPU/ASIC、HBM、chiplet 与高密度 I/O 放到更大、更稳定的封装平台上。", role: "给 AI/HPC 超大 package 提供更高互连密度、更低翘曲、更好的尺寸稳定性和高速信号表现。", replaces: "短期更像补充和升级，不是马上全面替代 ABF。", why: "卡点不在有没有玻璃，而在 TGV 深孔成孔、孔壁金属化、填铜空洞、切割微裂纹、RDL 对位、大尺寸热循环可靠性和客户认证。", companies: "Intel、Samsung Electro-Mechanics、TSMC、AT&S、Ibiden、Corning、AGC、LPKF、Onto Innovation。", aShare: "沃格光电/通格微、帝尔激光、大族激光、天承科技、长电科技、通富微电、京东方等。", evidence: "reported", heat: "early", verify: "看 TGV pitch/深宽比、填铜空洞率、微裂纹测试、RDL 层数、玻璃 core 尺寸、客户送样认证。" },
+      { id: "D1-N2-S2-L0-advanced-package-demand", parentId: "D1-N2-S2-glass-substrate", label: "L0 超大 AI package 需求", kind: "subnode", summary: "GPU/ASIC、多个 HBM 堆、chiplet、供电网络和高速 I/O 被放进越来越大的封装平台；这是玻璃基板路线的需求源，不是单个制造环节。", role: "解释为什么客户愿意试玻璃路线。京东方A对应的是玻璃基封装载板/面板级封装的远期能力线索：它把显示面板积累的玻璃加工、薄膜、光刻、蚀刻和大板制造能力迁移到半导体封装载板试验线，而不是已经卡住 AI package 量产的现成供应商。", replaces: "不替代制造环节，是需求源。对京东方而言，当前更像“显示面板厂切入玻璃基先进封装”的早期选项，不应等同于 CoWoS 量产产能、ABF 载板有效供给或已认证 AI 客户产能。", why: "如果 AI package 继续变大，传统有机基板和超大硅中介层的成本、翘曲、尺寸和良率压力会给玻璃路线留出窗口。但京东方A目前公开证据显示仍处试验线/送样/技术测试阶段，尚未批量生产和量产营收，良率未达量产水平，因此它是远期候选，不是当下卡点。", companies: "Intel、TSMC、Samsung、AMD、NVIDIA、Broadcom、Marvell、AT&S、Ibiden；京东方需对标的是 Samsung Electro-Mechanics、Intel glass substrate roadmap、Corning 材料协同和面板级封装路线。", aShare: "沃格光电、长电科技、通富微电；京东方A(000725，玻璃基封装载板试验线/面板级封装能力，已送样但未量产，降级为远期能力线索)等。", evidence: "reported", heat: "early", verify: "看 advanced packaging roadmap、AI accelerator package 尺寸、客户样品验证和量产时间表。京东方A单独核：2024年9.93亿元玻璃基封装载板试验线、2025年报“研发及产业化试验线实现工艺通线”、机构调研披露的部分国内客户送样/PoC/技术测试、与康宁合作备忘录、是否出现正式客户订单、量产良率、批量生产、量产营收和 AI/HPC 客户认证。" },
+      { id: "D1-N2-S2-L1-glass-core-spec", parentId: "D1-N2-S2-glass-substrate", label: "L1 玻璃 core / 低翘曲基底", kind: "subnode", summary: "玻璃 core 是玻璃基板主体材料层，承担机械支撑、尺寸稳定、低热膨胀和低损耗传输基础。", role: "给大尺寸封装提供稳定底座，降低有机材料翘曲风险。", replaces: "短期补充或部分替代有机 ABF/BT core。", why: "卡点在封装级规格一致性、低缺陷大尺寸供给、切割微裂纹控制和长期热机械可靠性。", companies: "Corning、AGC、Schott、Intel、Samsung Electro-Mechanics、AT&S。", aShare: "沃格光电/通格微、京东方。", evidence: "inferred", heat: "early", verify: "看玻璃 core 厚度、CTE、Dk/Df、panel size、TTV/平整度和可靠性报告。" },
+      { id: "D1-N2-S2-L2-tgv-via-formation", parentId: "D1-N2-S2-glass-substrate", label: "L2 TGV 成孔 / 激光改质", kind: "subnode", summary: "在玻璃中形成高深宽比通孔，为后续金属化和填铜创造可控孔壁。", role: "打开垂直导通路径。", replaces: "替代或补充有机载板微孔和硅中介层 TSV 路线。", why: "速度、孔形、微裂纹、热影响区和良率同时约束量产。", companies: "LPKF、Corning、AGC、Samsung Electro-Mechanics、Intel、DISCO、Mitsubishi Electric。", aShare: "帝尔激光、大族激光、沃格光电/通格微。", evidence: "reported", heat: "underfollowed", verify: "看 TGV drilling throughput、孔径/pitch、深宽比、微裂纹检测、良率、设备订单。" },
+      { id: "D1-N2-S2-L3-metallization-copper-fill", parentId: "D1-N2-S2-glass-substrate", label: "L3 孔金属化 / 填铜 / 湿电子化学品", kind: "subnode", summary: "让 TGV 真正导电的湿法和电镀工艺。", role: "把玻璃孔变成低电阻、低空洞、低应力的垂直互连。", replaces: "补充传统载板化学铜/电镀铜能力。", why: "填铜空洞、孔壁附着、铜应力、污染控制和添加剂配方会成为良率杀手。", companies: "MKS/Atotech、Uyemura、MacDermid Alpha、JCU、Samsung Electro-Mechanics、AT&S。", aShare: "天承科技、光华科技、上海新阳。", evidence: "inferred", heat: "underfollowed", verify: "看填铜空洞率、孔壁附着力、热循环后电阻漂移、添加剂客户认证。" },
+      { id: "D1-N2-S2-L4-rdl-panel-process", parentId: "D1-N2-S2-glass-substrate", label: "L4 RDL 再布线 / 面板级制程", kind: "subnode", summary: "在玻璃 core 两侧形成细线宽金属线路、介电层和焊盘。", role: "完成信号和供电的扇出、重分布和接口转换。", replaces: "补充 ABF build-up 线路和硅中介层上的部分 RDL 功能。", why: "大面板对位、细线宽良率、介电材料附着、铜迁移、污染控制和 panel warpage 是卡点。", companies: "Samsung Electro-Mechanics、Intel、AT&S、ASE、Amkor、Onto Innovation、KLA。", aShare: "长电科技、通富微电、沃格光电/通格微、京东方。", evidence: "inferred", heat: "early", verify: "看 RDL 线宽线距、层数、panel 对位精度、缺陷密度、warpage 和客户 sample pass rate。" },
+      { id: "D1-N2-S2-L5-metrology-reliability", parentId: "D1-N2-S2-glass-substrate", label: "L5 微裂纹检测 / 可靠性测试", kind: "subnode", summary: "玻璃基板从实验室样品走向客户认证的质量门槛。", role: "在高价值芯片贴装前筛出会导致开路、短路或裂纹扩展的隐性缺陷。", replaces: "升级传统载板 AOI、X-ray、翘曲量测和可靠性测试。", why: "没有可重复的检测标准，客户很难把玻璃基板放进高价值 AI accelerator。", companies: "Onto Innovation、KLA、Camtek、Cohu、Hitachi High-Tech、Intel、Samsung Electro-Mechanics。", aShare: "精测电子、矩子科技、华兴源创。", evidence: "inferred", heat: "underfollowed", verify: "看微裂纹检测方法、热循环 pass rate、TGV defect map、客户可靠性规范和检测设备订单。" },
+      { id: "D1-N2-S2-L6-qualification-capacity", parentId: "D1-N2-S2-glass-substrate", label: "L6 客户认证 / 有效产能", kind: "subnode", summary: "玻璃基板商业化的最后关口。", role: "把前面所有工艺能力转成可采购、可出货、可承担高价值芯片风险的量产资格。", replaces: "决定玻璃路线是否从 ABF/硅中介层补充选项升级为客户架构的一部分。", why: "客户认证周期、良率爬坡、成本曲线和封装生态协同是最终卡点。", companies: "Intel、TSMC、Samsung、ASE、Amkor、AT&S、Ibiden、Corning、AGC。", aShare: "沃格光电、帝尔激光、大族激光、天承科技、长电科技、通富微电、京东方。", evidence: "reported", heat: "early", verify: "看客户认证公告、试产线转量产、capex 转收入、良率曲线、AI/HPC 订单。" },
+      { id: "D1-N2-S1-L0-ai-package", parentId: "D1-N2-S1-substrate", label: "L0 大尺寸 AI package 需求", kind: "subnode", summary: "GPU/ASIC + HBM + interposer 的封装面积、I/O 数和供电密度抬高了载板规格。", why: "少数超大 package 把层数、平整度、翘曲和交期同时推到上限。", companies: "NVIDIA、AMD、Broadcom、Marvell、TSMC、Ibiden、Unimicron、Shinko。", aShare: "沪电股份、深南电路、兴森科技、生益科技。", evidence: "reported", heat: "repricing", verify: "看 GPU/ASIC package 尺寸变化、CoWoS 产能目标、substrate allocation。" },
+      { id: "D1-N2-S1-L1-build-up", parentId: "D1-N2-S1-substrate", label: "L1 Build-up 层数 / 线宽线距", kind: "subnode", summary: "ABF 载板通过多层 build-up 结构承载高密度走线、供电和信号完整性。", why: "层数越高、线宽线距越细，良率越容易被微短路、开路、层间对位和翘曲吃掉。", companies: "Ibiden、Unimicron、Shinko、AT&S、Nan Ya PCB、Kinsus。", aShare: "兴森科技、深南电路。", evidence: "reported", heat: "underfollowed", verify: "看高层数 FC-BGA 占比、AI 客户认证、良率爬坡、capex 项目。" },
+      { id: "D1-N2-S1-L2-abf-film", parentId: "D1-N2-S1-substrate", label: "L2 ABF 膜材 / 低 CTE 树脂", kind: "subnode", summary: "ABF film 是 build-up dielectric 的核心材料。", why: "材料配方、客户认证和长期可靠性测试周期长。", companies: "Ajinomoto、Resonac、Mitsubishi Gas Chemical、Taiyo Ink。", aShare: "生益科技、华正新材、联瑞新材、壹石通。", evidence: "inferred", heat: "underfollowed", verify: "看 Ajinomoto 供需评论、低 CTE/低损耗材料认证和客户导入周期。" },
+      { id: "D1-N2-S1-L3-microvia-plating", parentId: "D1-N2-S1-substrate", label: "L3 微孔 / 电镀铜 / 表面处理", kind: "subnode", summary: "激光微孔、化学铜、电镀铜和表面处理决定层间互连导通率。", why: "AI package 的电流密度和高频信号让孔壁质量、铜厚均匀性、空洞和污染控制变成良率杀手。", companies: "Atotech/MKS、Uyemura、MacDermid Alpha、JCU。", aShare: "光华科技、上海新阳、天承科技。", evidence: "inferred", heat: "underfollowed", verify: "看化学铜/电镀添加剂客户、载板厂扩产配套订单、孔可靠性指标。" },
+      { id: "D1-N2-S1-L4-equipment", parentId: "D1-N2-S1-substrate", label: "L4 LDI / 激光钻孔 / 压合设备", kind: "subnode", summary: "高端载板需要激光钻孔、直接成像、真空压合、DES 和精密蚀刻等设备链。", why: "设备精度和 throughput 直接决定扩产速度。", companies: "Orbotech/KLA、DISCO、Mitsubishi Electric、Hitachi High-Tech、SCREEN、Ushio。", aShare: "大族数控、芯碁微装、帝尔激光、东威科技。", evidence: "inferred", heat: "underfollowed", verify: "看载板设备订单、交期、客户验证层级。" },
+      { id: "D1-N2-S1-L5-warpage-test", parentId: "D1-N2-S1-substrate", label: "L5 翘曲控制 / AOI / 可靠性测试", kind: "subnode", summary: "大尺寸薄型载板要控制翘曲、尺寸稳定性、微缺陷和热循环可靠性。", why: "封装面积扩大后，轻微翘曲或微缺陷就会放大成贴装、键合和长期可靠性问题。", companies: "KLA、Onto Innovation、Camtek、Hitachi High-Tech、Cohu。", aShare: "精测电子、矩子科技、华兴源创。", evidence: "inferred", heat: "underfollowed", verify: "看 AOI/量测设备在 IC substrate 客户导入、warpage spec、热循环失效率。" },
+      { id: "D1-N2-S1-L6-capacity-qualification", parentId: "D1-N2-S1-substrate", label: "L6 产能爬坡 / 客户认证", kind: "subnode", summary: "载板产能只有通过 GPU/ASIC 客户认证、良率稳定和交付验证后才算有效供给。", why: "新增厂房和设备不等于可供 NVIDIA/AMD/ASIC 客户使用的产能。", companies: "Ibiden、Unimicron、Shinko、AT&S、Nan Ya PCB、TSMC ecosystem。", aShare: "A股公司若没有明确高端载板客户认证和批量收入，更多是远期选项。", evidence: "reported", heat: "repricing", verify: "看客户认证公告、稼动率、良率、AI 订单占比、交期。" },
+      { id: "D2-custom-asic", parentId: "root", label: "Custom AI ASIC", kind: "domain", summary: "Google TPU、AWS Trainium、Microsoft Maia、Meta MTIA 和 OpenAI custom chip。", why: "ASIC 的逻辑不是替代所有 GPU，而是吃掉可预测、高频、大规模的推理或内部工作负载。", companies: "Broadcom、Marvell、Google、AWS、Microsoft、Meta、MediaTek、Alchip。", aShare: "直接映射较弱，更多在 EDA/IP、封测、载板、PCB、光互连和电源配套。", evidence: "reported", heat: "repricing", verify: "看长期 design win、2nm 节点、外售云实例、客户 capex 从 GPU 向 ASIC 的迁移。" },
+      { id: "D2-N1-design", parentId: "D2-custom-asic", label: "ASIC 设计伙伴", kind: "node", summary: "Broadcom/Marvell 把 hyperscaler 的架构意图落成可制造芯片。", why: "顶级 custom silicon design service 供应商少，客户关系长，SerDes、封装和量产协同难复制。", companies: "Broadcom、Marvell、MediaTek、Alchip。", aShare: "EDA/IP 和封测配套可以跟踪，但不能简单等同 Broadcom/Marvell。", evidence: "reported", heat: "repricing", verify: "看 Google/OpenAI/Meta/AWS/Microsoft 项目披露、合同周期、客户集中度和 tape-out 节奏。" },
+      { id: "D3-power-cooling", parentId: "root", label: "Power + Cooling", kind: "domain", summary: "AI 数据中心从服务器问题变成电力工程、热管理和并网节奏问题。", why: "AI campus 的 MW/GW 级负载让 power-first site selection 取代传统 fiber-first 逻辑。", companies: "Vertiv、Eaton、Schneider、GE Vernova、Siemens Energy、Constellation、Vistra。", aShare: "金盘科技、思源电气、特变电工、许继电气、易事特、英维克、申菱环境、高澜股份。", evidence: "strong", heat: "repricing", verify: "看并网批复、PPA、变压器订单、液冷 CDU 订单、PUE 和机柜功率密度。" },
+      { id: "D3-N1-grid", parentId: "D3-power-cooling", label: "电网接入 / PPA", kind: "node", summary: "给 AI campus 提供可用 MW/GW 级电力连接，是数据中心能不能开工的前置条件。", why: "AI 建设按月迭代，输电和并网按年审批；排队、变压器和电网稳定性成为硬约束。", companies: "Constellation、Vistra、GE Vernova、Eaton、Schneider、Siemens Energy。", aShare: "金盘科技、思源电气、特变电工、许继电气、平高电气。", evidence: "strong", heat: "underfollowed", verify: "看大型 PPA、behind-the-meter 项目、变压器交付周期和数据中心选址公告。" },
+      { id: "D3-N3-ups-distribution", parentId: "D3-power-cooling", label: "UPS / 站内配电", kind: "node", summary: "UPS、开关柜、母线槽、配电保护和储能电力电子把外部电网/变压器输出转成 AI data hall 可稳定使用的电力。", why: "AI rack 功率密度上升后，卡点不只在拿电和变压器，也在站内供配电的可靠性、短路容量、切换保护、认证和交付速度。", companies: "Vertiv、Eaton、Schneider、ABB、nVent。", aShare: "易事特(300376，UPS/数据中心供配电/储能电力电子)、科华数据、良信股份、正泰电器、许继电气。", evidence: "reported", heat: "underfollowed", verify: "看 UPS 与数据中心供配电收入占比、AI/hyperscale 客户订单、海外认证、储能 PCS/系统订单、交付周期和毛利率。" },
+      { id: "D3-N2-liquid", parentId: "D3-power-cooling", label: "液冷 / CDU / 冷板", kind: "node", summary: "Direct-to-chip 液冷、CDU、冷板、泵阀和管路让高功率 AI rack 稳定运行。", why: "GB/VR rack 功率密度上升后，风冷越来越难支撑，液冷可靠性变成交付条件。", companies: "Vertiv、Delta、Schneider、Auras、CoolIT、Boyd。", aShare: "英维克、申菱环境、高澜股份、同飞股份、飞荣达、银轮股份。", evidence: "strong", heat: "repricing", verify: "看液冷 attach rate、CDU 订单、客户认证、毛利率和漏液可靠性记录。" },
+      { id: "D4-interconnect", parentId: "root", label: "Interconnect / 光互连", kind: "domain", summary: "Interconnect / 光互连是 AI 集群内部把 GPU/ASIC、交换芯片、机柜和数据中心网络连成可训练、可推理系统的链路层。", role: "把算力芯片的理论 FLOPS 转成集群级可用吞吐。", replaces: "不是替代 GPU/HBM，而是补齐 GPU/HBM 之外的系统瓶颈。", why: "800G 已经进入主流 AI 集群，1.6T 的放量会同时推高 EML/CW 光源、DSP/LPO 模拟芯片、交换 ASIC SerDes、光耦合封装和测试认证压力。", companies: "NVIDIA networking、Broadcom、Marvell、Arista、Coherent、Lumentum、Ciena、Innolight、Eoptolink、Accelink。", aShare: "中际旭创、新易盛、天孚通信、光迅科技、华工科技、剑桥科技、联特科技、博创科技、太辰光、长飞光纤。", evidence: "reported", heat: "repricing", verify: "看 hyperscaler 网络 capex、networking revenue、800G/1.6T shipment mix、客户认证和模块毛利率。" },
+      { id: "D4-N0-cluster-network", parentId: "D4-interconnect", label: "L0 AI 集群网络需求", kind: "node", summary: "训练、后训练和大规模推理把 GPU/ASIC 节点连成数千到数十万加速卡的 fabric。", role: "把模型并行和集群调度需求转成端口数、带宽和拓扑。", replaces: "升级传统云数据中心网络需求。", why: "模型和集群规模扩张快于网络设备认证节奏。", companies: "NVIDIA networking、Broadcom、Marvell、Arista、Cisco、Meta、Microsoft、Google、AWS。", aShare: "中际旭创、新易盛、天孚通信、沪电股份、生益科技、胜宏科技。", evidence: "reported", heat: "repricing", verify: "看 hyperscaler AI 网络架构、Spectrum-X/InfiniBand revenue、Arista AI back-end 网络订单。" },
+      { id: "D4-N1-16t", parentId: "D4-interconnect", label: "L1 800G -> 1.6T 可插拔光模块", kind: "node", summary: "当前 AI 集群最直接的光互连交付形态。", role: "用标准化形态快速给 AI cluster 提供高带宽端口。", replaces: "升级 400G/800G 以下模块，并在中长距离场景替代铜缆。", why: "功耗、DSP、激光器、光模块良率、高速电接口和客户互操作认证共同决定 1.6T 放量速度。", companies: "Marvell、Broadcom、Coherent、Lumentum、Innolight、Eoptolink、Accelink、Fabrinet。", aShare: "中际旭创、新易盛、天孚通信、光迅科技、华工科技、剑桥科技、联特科技、博创科技。", evidence: "reported", heat: "repricing", verify: "看 1.6T pluggable mass shipment、客户份额、价格曲线和毛利率。" },
+      { id: "D4-N2-cpo", parentId: "D4-interconnect", label: "L5 CPO / ELSFP / 近封装光 I/O", kind: "node", summary: "把光接口从前面板可插拔模块推向交换 ASIC 或计算芯片附近的架构路线。", role: "在 1.6T 之后继续降低每 bit 功耗、提高端口密度。", replaces: "长期可能部分替代最高端交换机上的 pluggable 模块。", why: "商业化仍早，但外置激光源、光引擎、光纤阵列耦合、热管理和现场可维护性可能变成新卡点。", companies: "Broadcom、NVIDIA ecosystem、TSMC COUPE、Coherent、Lumentum、Ciena/Nubis。", aShare: "A股映射要谨慎，先看激光器、光芯片、封装和客户验证。", evidence: "inferred", heat: "early", verify: "看 2027 scale-up design win、ELSFP 订单转收入、CPO port forecast 和维修/良率问题。" },
+      { id: "D4-N3-switch-asic-serdes", parentId: "D4-interconnect", label: "L1 交换 ASIC / SerDes / Retimer", kind: "node", summary: "AI 网络的电侧心脏。", role: "把 AI fabric 的协议和流量调度落到硅片上。", replaces: "升级传统数据中心交换 ASIC，并减少部分模块内 DSP 依赖。", why: "224G SerDes、先进制程、封装、功耗和软件生态门槛极高。", companies: "Broadcom、NVIDIA networking、Marvell、Credo、Astera Labs、Rambus、Arista。", aShare: "沪电股份、生益科技、胜宏科技，以及中际旭创、新易盛、天孚通信的 LPO 客户导入。", evidence: "reported", heat: "repricing", verify: "看 switch ASIC 出货、SerDes 良率、LPO 互操作测试、Retimer attach rate。" },
+      { id: "D4-N4-optical-components", parentId: "D4-interconnect", label: "L2 光芯片 / 光器件 / 耦合封装", kind: "node", summary: "高速光模块拆开后的物理核心。", role: "把高速电信号稳定转换为低损耗光信号。", replaces: "升级低速光器件，硅光路线中部分替代传统 EML 方案。", why: "200G/lane 后，InP 外延、芯片制程、光耦合、老化测试和自动化贴装难度上升。", companies: "Lumentum、Coherent、Broadcom、Sumitomo Electric、Mitsubishi Electric、Fabrinet。", aShare: "源杰科技、光迅科技、华工科技、仕佳光子、光库科技、天孚通信、太辰光、博创科技。", evidence: "reported", heat: "underfollowed", verify: "看 200G/lane 光芯片量产、CW-DFB 订单、硅光客户导入、耦合良率。" },
+      { id: "D4-N5-copper-pcb-cable", parentId: "D4-interconnect", label: "L3 高速 PCB / DAC-ACC-AEC / 连接器", kind: "node", summary: "光模块之外的短距电互连层。", role: "在短距离内用更低成本和功耗完成互连。", replaces: "DAC/ACC/AEC 在机柜内短距补充或替代部分光模块。", why: "高速材料、连接器精度、线缆一致性和系统调试是隐性瓶颈。", companies: "Amphenol、TE Connectivity、Molex、Credo、Astera Labs、Samtec、Rogers、Panasonic。", aShare: "沪电股份、生益科技、胜宏科技、深南电路、立讯精密。", evidence: "inferred", heat: "underfollowed", verify: "看 112G/224G 材料认证、AI switch PCB 层数和损耗指标、AEC/ACC 出货。" },
+      { id: "D4-N6-test-qualification-capacity", parentId: "D4-interconnect", label: "L5 测试 / 认证 / 有效产能", kind: "node", summary: "光互连从样品走向大规模部署的最后关口。", role: "把光芯片、模块、电芯片和网络设备能力转成客户可采购、可上线、可长期运行的有效供给。", replaces: "升级传统通信模块测试流程。", why: "1.6T/LPO/CPO 的测试时间、设备能力、自动化耦合和客户认证周期可能拖慢放量。", companies: "Keysight、Anritsu、VIAVI、Teradyne、Advantest、Fabrinet。", aShare: "罗博特科、天孚通信、光迅科技、华工科技、精测电子。", evidence: "inferred", heat: "underfollowed", verify: "看 1.6T 测试设备交期、burn-in 时长、客户认证节奏、退货率、良率爬坡。" },
+      { id: "D4-N1-S1-eml-200g-lane", parentId: "D4-N1-16t", label: "EML / 200G per lane 光源", kind: "subnode", summary: "1.6T 可插拔光模块里把高速电信号转成高质量光信号的关键光芯片路线。", role: "决定 1.6T 模块能否稳定跑到更高速率、更远传输距离和可接受功耗。", replaces: "升级低速率 EML/DFB 和部分传统光源方案。", why: "1.6T 放量窗口近，EML 供应商集中、扩产慢、可靠性测试周期长。", companies: "Lumentum、Coherent、Broadcom、Mitsubishi Electric、Sumitomo Electric。", aShare: "源杰科技、光迅科技、华工科技、仕佳光子；中际旭创、新易盛、天孚通信验证模块份额。", evidence: "reported", heat: "underfollowed", verify: "看 200G/lane EML 订单、InP 外延/芯片产能、客户认证、良率、交期。" },
+      { id: "D4-N1-S2-dsp-lpo-driver-tia", parentId: "D4-N1-16t", label: "DSP -> LPO Driver / TIA", kind: "subnode", summary: "光模块从传统 DSP 方案向低功耗线性直驱方案迁移时的电芯片层。", role: "降低光模块功耗、延迟和成本。", replaces: "在短距 AI 集群内部分替代 DSP-based pluggable。", why: "卡点在互操作性和系统协同，而不是单颗芯片价格。", companies: "Broadcom、Marvell、NVIDIA networking、Credo、MACOM、MaxLinear。", aShare: "中际旭创、新易盛、天孚通信、光迅科技的 LPO/线性驱动模块导入。", evidence: "reported", heat: "repricing", verify: "看 LPO 端口出货、交换芯片 SerDes 支持、客户互操作测试、功耗优势。" },
+      { id: "D4-N1-S3-cw-dfb-siph", parentId: "D4-N1-16t", label: "CW-DFB + 硅光光源", kind: "subnode", summary: "用连续波激光器给硅光调制器提供稳定光源的路线。", role: "降低对少数 EML 供应商依赖，为硅光、CPO 和更高带宽架构提供可扩展光源。", replaces: "在部分硅光模块和 CPO/ELS 路线中补充或替代 EML。", why: "如果 EML 供应紧张，CW-DFB + 硅光替代路径会被市场关注。", companies: "Broadcom、Sumitomo Electric、Coherent、Lumentum、LandMark/LuxNet、Intel silicon photonics ecosystem。", aShare: "光库科技、源杰科技、光迅科技、华工科技、仕佳光子。", evidence: "inferred", heat: "underfollowed", verify: "看 CW-DFB 产能、硅光模块导入、光源老化测试、耦合良率。" },
+      { id: "D4-N2-S1-els-cpo-light-engine", parentId: "D4-N2-cpo", label: "ELS / CPO 光引擎", kind: "subnode", summary: "把激光源、调制、探测、耦合和封装放到更靠近交换芯片或计算芯片的位置。", role: "在 1.6T 之后继续压低互连功耗和提高端口密度。", replaces: "长期可能部分替代传统 pluggable 在最高端交换机/AI scale-up 网络中的位置。", why: "如果出现客户 design win、ELS 订单或 CPO 端口预测上修，市场会提前重估光源、光引擎和封装供应链。", companies: "Broadcom、NVIDIA ecosystem、Coherent、Lumentum、Ciena/Nubis、TSMC COUPE、Ayar Labs。", aShare: "天孚通信、光库科技、光迅科技、华工科技、源杰科技。", evidence: "inferred", heat: "early", verify: "看 CPO/ELSFP design win、外置光源采购、光引擎良率、客户部署时间表。" },
+      { id: "D5-rack-odm", parentId: "root", label: "Rack-scale ODM", kind: "domain", summary: "Foxconn、Quanta、Wistron 等从服务器代工升级为 AI supercomputer 整柜交付。", why: "NVL72/GB300/VR rack 不是普通服务器，液冷、供电、网络拓扑和 burn-in 都提高门槛。", companies: "Foxconn、Quanta、Wistron、Wiwynn、Supermicro、Dell、HPE。", aShare: "工业富联、浪潮信息、中科曙光、沪电股份、生益科技、胜宏科技、立讯精密。", evidence: "reported", heat: "hot", verify: "看 GB/VR rack shipment、单柜 ASP、毛利率、客户多源化和液冷整柜良率。" },
+      { id: "D6-agent-apps", parentId: "root", label: "Agentic Apps / 应用", kind: "domain", summary: "把 AI 从聊天工具变成销售、客服、代码、法务、财务等可计费工作流。", why: "应用层需求真实，但卡点不是供应不足，而是分发、数据闭环、可信执行和推理成本。", companies: "Microsoft、Google、Salesforce、ServiceNow、Adobe、OpenAI、Anthropic。", aShare: "金山办公、科大讯飞、用友网络、泛微网络、致远互联等需要看续费和真实 AI 收入。", evidence: "strong", heat: "hot", verify: "看 Agent ARR、付费 seat、净留存、work unit、毛利率和推理成本下降。" },
+    ];
+
+    const byId = new Map(tree.map(node => [node.id, node]));
+    const childrenOf = id => tree.filter(node => node.parentId === id);
+    const pathTo = id => {
+      const path = [];
+      let cur = byId.get(id);
+      while (cur) {
+        path.unshift(cur);
+        cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+      }
+      return path;
+    };
+    const chokeFor = node => node.heat === "underfollowed" && node.evidence !== "weak" ? "current" : node.heat === "repricing" ? "candidate" : node.heat === "hot" ? "priced" : "future";
+    const toneClass = type => ({ strong: "success", reported: "info", inferred: "warning", weak: "", underfollowed: "success", repricing: "warning", hot: "info", early: "", current: "success", candidate: "warning", priced: "info", future: "" }[type] || "");
+    const performanceTone = value => value === "待查" ? "" : value.startsWith("-") ? "warning" : "success";
+    const relatedPerformance = node => stockPerformance.filter(stock => [stock.name, ...(stock.aliases || [])].some(label => node.aShare.includes(label)));
+    const stockAnalyses = {
+      "D1-N2-S2-L0-advanced-package-demand": [
+        {
+          name: "京东方A",
+          code: "000725.SZ",
+          judgment: "保留但降级为远期能力线索，不按当下卡点处理。",
+          chainPosition: "对应玻璃基封装载板 / 面板级封装试验线。它的价值来自把显示面板积累的玻璃加工、薄膜、光刻、蚀刻和大板制造能力迁移到半导体封装载板，而不是已经进入 AI/HPC package 量产供应。",
+          evidence: "公开证据包括：2024年投资9.93亿元建设玻璃基封装载板试验线；2025年报披露“玻璃基封装载板研发及产业化试验线实现工艺通线”；机构调研披露已向部分国内客户送样、部分客户通过概念认证并进入技术测试；与康宁签署围绕玻璃基封装载板等方向的合作备忘录。",
+          missingProof: "缺少正式 AI/HPC 客户订单、批量生产、量产营收、量产良率、封装尺寸/线宽线距实测良率和海外大客户认证。公司也公开提示该业务尚未实现批量生产及量产营收，试验线良率未达量产水平。",
+          falsification: "如果未来 6-12 个月仍没有客户认证、良率爬坡、正式订单或量产营收，京东方A在这个节点应继续降级；若业务长期停留在概念认证/技术测试，说明它只是显示面板能力外溢，不构成玻璃基板卡点。"
+        }
+      ]
+    };
+    const searchableText = node => [node.id, node.label, node.kind, node.summary, node.role, node.replaces, node.why, node.companies, node.aShare, node.verify, evidenceText[node.evidence], heatText[node.heat]].filter(Boolean).join(" ").toLowerCase();
+    const getDescendants = id => {
+      const out = [];
+      const walk = pid => childrenOf(pid).forEach(child => { out.push(child.id); walk(child.id); });
+      walk(id);
+      return out;
+    };
+    const html = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    let selectedId = localStorage.getItem("ai-map-selected") || "D3-N3-ups-distribution";
+    let expanded = JSON.parse(localStorage.getItem("ai-map-expanded") || "null") || {
+      root: true, "D1-ai-factory": true, "D1-N1-hbm": true, "D1-N2-cowos": true,
+      "D1-N2-S2-glass-substrate": true, "D3-power-cooling": true, "D4-interconnect": true,
+      "D4-N1-16t": true, "D4-N2-cpo": true
+    };
+
+    const el = {
+      tree: document.getElementById("tree"),
+      detail: document.getElementById("detail"),
+      search: document.getElementById("search"),
+      heatFilter: document.getElementById("heatFilter"),
+      visibleCount: document.getElementById("visibleCount"),
+      copyNode: document.getElementById("copyNode"),
+    };
+
+    function matchesFilters(node) {
+      const q = el.search.value.trim().toLowerCase();
+      const heat = el.heatFilter.value;
+      const selfMatch = (!q || searchableText(node).includes(q)) && (heat === "all" || node.heat === heat);
+      const childMatch = getDescendants(node.id).some(id => {
+        const child = byId.get(id);
+        return (!q || searchableText(child).includes(q)) && (heat === "all" || child.heat === heat);
+      });
+      return selfMatch || childMatch;
+    }
+
+    function renderTreeNode(node, depth = 0) {
+      if (!matchesFilters(node)) return "";
+      const children = childrenOf(node.id).filter(matchesFilters);
+      const isExpanded = expanded[node.id] ?? depth < 2;
+      const isSelected = selectedId === node.id;
+      const row = `
+        <button class="tree-row ${isSelected ? "selected" : ""}" data-select="${html(node.id)}" style="padding-left:${10 + depth * 18}px">
+          <span class="twisty" data-toggle="${html(node.id)}">${children.length ? (isExpanded ? "v" : ">") : ""}</span>
+          <span class="label">${html(node.label)}</span>
+          <span class="pill">${kindText[node.kind]}</span>
+          <span class="pill ${toneClass(node.heat)}">${heatText[node.heat]}</span>
+          <span class="pill ${toneClass(node.evidence)}">${evidenceText[node.evidence]}</span>
+        </button>`;
+      return row + (children.length && isExpanded ? children.map(child => renderTreeNode(child, depth + 1)).join("") : "");
+    }
+
+    function renderTree() {
+      const root = byId.get("root");
+      el.tree.innerHTML = renderTreeNode(root);
+      const visible = tree.filter(matchesFilters).length;
+      el.visibleCount.textContent = `${visible} / ${tree.length}`;
+    }
+
+    function renderDetail() {
+      const node = byId.get(selectedId) || byId.get("root");
+      const path = pathTo(node.id).map(n => n.label).join(" / ");
+      const children = childrenOf(node.id);
+      const stocks = relatedPerformance(node);
+      const analyses = stockAnalyses[node.id] || [];
+      el.detail.innerHTML = `
+        <div>
+          <div class="path">${html(path)}</div>
+          <div class="title-row">
+            <div>
+              <div class="faint">${html(node.id)} · ${html(node.kind)}</div>
+              <h2>${html(node.label)}</h2>
+              <div class="pill-row">
+                <span class="pill ${toneClass(node.evidence)}">${evidenceText[node.evidence]}</span>
+                <span class="pill ${toneClass(node.heat)}">${heatText[node.heat]}</span>
+                <span class="pill ${toneClass(chokeFor(node))}">${chokeText[chokeFor(node)]}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section"><h3>它是什么</h3><p>${html(node.summary)}</p></div>
+        ${node.role ? `<div class="section"><h3>它的作用</h3><p class="muted">${html(node.role)}</p></div>` : ""}
+        ${node.replaces ? `<div class="section"><h3>替代 / 补充谁</h3><p class="muted">${html(node.replaces)}</p></div>` : ""}
+        <div class="section"><h3>为什么可能卡脖子</h3><p class="muted">${html(node.why)}</p></div>
+        <div class="section"><h3>海外 / 私有标的</h3><p>${html(node.companies)}</p></div>
+        <div class="section"><h3>A股 / 港股映射</h3><p>${html(node.aShare)}</p></div>
+        ${analyses.length ? `<div class="section"><h3>个股映射结论</h3><div class="stock-list">${analyses.map(item => `<div class="stock" style="display:block"><p><strong>${html(item.name)} ${html(item.code)}：</strong>${html(item.judgment)}</p><p class="muted"><strong>对应环节：</strong>${html(item.chainPosition)}</p><p class="muted"><strong>已有证据：</strong>${html(item.evidence)}</p><p class="muted"><strong>缺失证据：</strong>${html(item.missingProof)}</p><p class="muted"><strong>证伪条件：</strong>${html(item.falsification)}</p></div>`).join("")}</div></div>` : ""}
+        ${stocks.length ? `<div class="section"><h3>关联A股近期涨跌幅</h3><p class="faint">3个月、半年、1年为最新交易日相对对应日附近收盘价涨跌幅；价格动量只作研究背景。</p><div class="stock-list">${stocks.map(stock => `<div class="stock"><strong>${html(stock.name)} ${html(stock.code)}</strong><span class="pill ${performanceTone(stock.m3)}">3个月 ${html(stock.m3)}</span><span class="pill ${performanceTone(stock.m6)}">半年 ${html(stock.m6)}</span><span class="pill ${performanceTone(stock.y1)}">1年 ${html(stock.y1)}</span><span class="faint">截至 ${html(stock.asOf)} · ${html(stock.source)}</span><button data-stock-action="${html(stock.code)}">分析个股</button>${stockDetails.some(d => d.code === stock.code) ? `<button class="btn-primary" data-jump-detail="${html(stock.code)}">查看分析</button>` : ""}</div>`).join("")}</div></div>` : ""}
+        <div class="section"><h3>怎么验证</h3><p class="muted">${html(node.verify)}</p></div>
+        <div class="section">
+          <h3>研究动作</h3>
+          <p class="faint">浏览器版不能直接打开 Cursor 新对话；点击按钮会复制对应任务提示词。</p>
+          <div class="actions">
+            <button class="btn-primary" data-action="deepen">生成子层</button>
+            <button data-action="evidence">补证据</button>
+            <button data-action="ashare">找A股映射</button>
+            <button data-action="reevaluate">重新评估</button>
+          </div>
+        </div>
+        <div class="section actions">
+          <button data-copy="id">复制 ID</button>
+          <button data-copy="ashare">复制 A股映射</button>
+          <button data-copy="verify">复制验证路径</button>
+          <button data-copy="all">复制完整摘要</button>
+        </div>
+        ${children.length ? `<div class="section"><h3>下一层</h3><div class="children">${children.map(child => `<button data-select="${html(child.id)}">${html(child.label)}</button>`).join("")}</div></div>` : ""}
+      `;
+    }
+
+    function selectedSummary(mode = "all") {
+      const node = byId.get(selectedId) || byId.get("root");
+      if (mode === "id") return node.id;
+      if (mode === "ashare") return node.aShare;
+      if (mode === "verify") return node.verify;
+      return `${node.label}\nID: ${node.id}\n路径: ${pathTo(node.id).map(n => n.label).join(" / ")}\n\n它是什么: ${node.summary}\n\n为什么可能卡脖子: ${node.why}\n\n海外/私有标的: ${node.companies}\n\nA股/港股映射: ${node.aShare}\n\n怎么验证: ${node.verify}`;
+    }
+
+    function actionPrompt(action) {
+      const node = byId.get(selectedId) || byId.get("root");
+      const task =
+        action === "reevaluate"
+          ? "重新评估这个节点：判断它是否仍是当下卡点、市场是否已经定价、证据等级是否需要升降级、A股映射是否仍准确，并更新 ai-industry-serenity-map.html。"
+          : action === "deepen"
+            ? "继续拆这个节点的下一层子节点，并更新 ai-industry-serenity-map.html。"
+            : action === "evidence"
+              ? "补充这个节点的证据等级、来源、验证路径和证伪条件，并更新 ai-industry-serenity-map.html。"
+              : "补充这个节点的 A股/港股映射、对应强弱和验证方式，并更新 ai-industry-serenity-map.html。";
+      return `请继续维护 /Users/wangzhiyang/Documents/serenity-canvases/ai-industry-serenity-map.html。\n目标节点：${node.id}（${node.label}）。\n任务：${task}\n\n当前节点摘要：\n${selectedSummary("all")}`;
+    }
+
+    function stockPrompt(code) {
+      const node = byId.get(selectedId) || byId.get("root");
+      const stock = stockPerformance.find(item => item.code === code);
+      if (!stock) return selectedSummary("all");
+      return `请继续维护 /Users/wangzhiyang/Documents/serenity-canvases/ai-industry-serenity-map.html。
+目标节点：${node.id}（${node.label}）。
+目标股票：${stock.name}（${stock.code}）。
+
+任务：分析这只个股与当前节点的产业链映射是否成立，并在必要时更新 HTML。
+
+请重点回答：
+1. ${stock.name} 具体对应当前节点的哪个环节，是否真属于卡点，而不是泛概念。
+2. 订单、客户、认证、收入占比、产能、毛利率、海外/AI 数据中心暴露有哪些可核证证据。
+3. 当前节点的 A股映射是否要保留、降级、升级或改写。
+4. 最近 3个月/半年/1年涨跌幅是否需要刷新；当前记录为 3个月 ${stock.m3}、半年 ${stock.m6}、1年 ${stock.y1}，截至 ${stock.asOf}，来源 ${stock.source}。
+5. 给出主要证伪条件，以及下一步最该查的 3 个公开来源。
+
+当前节点摘要：
+${selectedSummary("all")}`;
+    }
+
+    function select(id) {
+      selectedId = id;
+      localStorage.setItem("ai-map-selected", selectedId);
+      const path = pathTo(id);
+      path.forEach(node => { expanded[node.id] = true; });
+      localStorage.setItem("ai-map-expanded", JSON.stringify(expanded));
+      render();
+    }
+
+    function render() {
+      document.getElementById("domainCount").textContent = childrenOf("root").length;
+      document.getElementById("nodeCount").textContent = tree.filter(n => n.kind === "node" || n.kind === "subnode").length;
+      document.getElementById("coldCount").textContent = tree.filter(n => n.heat === "underfollowed").length;
+      document.getElementById("stockCount").textContent = stockPerformance.length;
+      renderTree();
+      renderDetail();
+    }
+
+    document.addEventListener("click", async event => {
+      const toggle = event.target.closest("[data-toggle]");
+      if (toggle && toggle.dataset.toggle) {
+        event.stopPropagation();
+        expanded[toggle.dataset.toggle] = !(expanded[toggle.dataset.toggle] ?? true);
+        localStorage.setItem("ai-map-expanded", JSON.stringify(expanded));
+        renderTree();
+        return;
+      }
+      const selectTarget = event.target.closest("[data-select]");
+      if (selectTarget && selectTarget.dataset.select) {
+        select(selectTarget.dataset.select);
+        return;
+      }
+      const copy = event.target.closest("[data-copy]");
+      if (copy) {
+        await navigator.clipboard.writeText(selectedSummary(copy.dataset.copy));
+        copy.textContent = "已复制";
+        setTimeout(() => renderDetail(), 800);
+      }
+      const action = event.target.closest("[data-action]");
+      if (action) {
+        await navigator.clipboard.writeText(actionPrompt(action.dataset.action));
+        action.textContent = "已复制提示词";
+        setTimeout(() => renderDetail(), 900);
+      }
+      const stockAction = event.target.closest("[data-stock-action]");
+      if (stockAction) {
+        await navigator.clipboard.writeText(stockPrompt(stockAction.dataset.stockAction));
+        stockAction.textContent = "已复制个股提示词";
+        setTimeout(() => renderDetail(), 900);
+      }
+      const jumpDetail = event.target.closest("[data-jump-detail]");
+      if (jumpDetail) {
+        jumpToStockDetail(jumpDetail.dataset.jumpDetail);
+      }
+    });
+
+    el.search.addEventListener("input", renderTree);
+    el.heatFilter.addEventListener("change", renderTree);
+    document.getElementById("expandAll").addEventListener("click", () => {
+      tree.forEach(node => { expanded[node.id] = true; });
+      localStorage.setItem("ai-map-expanded", JSON.stringify(expanded));
+      renderTree();
+    });
+    document.getElementById("collapseAll").addEventListener("click", () => {
+      expanded = { root: true };
+      localStorage.setItem("ai-map-expanded", JSON.stringify(expanded));
+      renderTree();
+    });
+    const stockDetails = [
+      {
+        name: "京东方A",
+        code: "000725.SZ",
+        nodeId: "D1-N2-S2-L0-advanced-package-demand",
+        nodeLabel: "L0 超大 AI package 需求",
+        path: "AI Industry / AI Factory / 云端算力 / CoWoS / 先进封装 / 玻璃基板 / TGV / L0 超大 AI package 需求",
+        conclusion: "保留在该节点，但降级为“玻璃基封装载板 / 面板级封装远期能力线索”，不按当下卡点处理。",
+        chainPosition: "它把显示面板积累的玻璃加工、薄膜、光刻、蚀刻和大板制造能力迁移到半导体封装载板试验线，对应玻璃基封装载板 / 面板级封装，而不是已经进入 AI/HPC package 量产供应的现成供应商。",
+        evidence: "2024 年投资 9.93 亿元建设玻璃基封装载板试验线；2025 年报披露“研发及产业化试验线实现工艺通线”；机构调研披露已向部分国内客户送样、部分客户通过概念认证并进入技术测试；与康宁签署玻璃基封装载板等方向合作备忘录。",
+        missingProof: "缺正式 AI/HPC 客户订单、批量生产、量产营收、量产良率与海外大客户认证；公司公开提示该业务尚未实现批量生产及量产营收，试验线良率未达量产水平。",
+        quote: "原 3 个月 +51.3% / 半年 +56.4% / 1 年 +64.6%（截至 2026-06-09）已改为“待复算”——6 月 11 日盘中约 5.83 元，较 6 月 9 日 6.52 元明显回落，需按收盘日线重算。",
+        falsification: "若未来 6-12 个月仍无客户认证、良率爬坡、正式订单或量产营收，应继续降级；若长期停留在概念认证/技术测试，说明只是显示面板能力外溢，不构成玻璃基板卡点。",
+        nextSources: "① 京东方投资者关系活动记录表与 2025 年报；② 与康宁合作的后续正式协议进展；③ 是否出现 AI/HPC 客户送样→认证→量产营收的公告。"
+      }
+    ];
+
+    const stockDetailText = item => [item.name, item.code, item.path, item.conclusion, item.chainPosition, item.evidence, item.missingProof, item.quote, item.falsification, item.nextSources].join(" ").toLowerCase();
+
+    function detailPrompt(item, kind) {
+      const task = kind === "reevaluate"
+        ? `重新评估 ${item.name}(${item.code}) 与该节点的映射：是否仍是远期能力线索还是该升级/降级、证据等级是否变化、量产/客户认证有无新进展。`
+        : kind === "drill"
+          ? `对 ${item.name}(${item.code}) 在该节点继续下钻：拆出更细的子环节（如玻璃 core、TGV 成孔、填铜、RDL、检测、客户认证），逐项给证据与证伪条件。`
+          : `对 ${item.name}(${item.code}) 做交叉验证：用至少 3 类独立来源（公司公告/年报、第三方行业媒体如 TrendForce/集微网/Commercial Times、康宁或同业口径）交叉核对其进展是否被夸大，并与同业（沃格光电、三星电机、Intel glass substrate roadmap）对比定位。`;
+      return `请继续维护 /Users/wangzhiyang/Documents/serenity-canvases/ai-industry-serenity-map.html。\n目标节点：${item.nodeId}（${item.nodeLabel}）。\n目标股票：${item.name}（${item.code}）。\n任务：${task}\n完成后更新底部「个股分析详情」对应卡片。`;
+    }
+
+    const collapsedDetails = {};
+
+    function renderStockDetails() {
+      const q = document.getElementById("stockSearch").value.trim().toLowerCase();
+      const list = stockDetails.filter(item => !q || stockDetailText(item).includes(q));
+      const body = document.getElementById("stockDetailBody");
+      const label = document.getElementById("stockCountLabel");
+      label.textContent = `${list.length} / ${stockDetails.length}`;
+      if (!list.length) {
+        body.innerHTML = `<p class="muted">没有匹配的个股分析。</p>`;
+        return;
+      }
+      body.innerHTML = list.map(item => {
+        const collapsed = !!collapsedDetails[item.code];
+        return `
+        <div class="section" data-detail-card="${html(item.code)}">
+          <div class="title-row">
+            <div>
+              <h3 style="margin-bottom:2px">${html(item.name)} ${html(item.code)}</h3>
+              <div class="path">${html(item.path)}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button data-detail-action="reevaluate" data-detail-code="${html(item.code)}">重新评估</button>
+              <button data-detail-action="drill" data-detail-code="${html(item.code)}">下钻</button>
+              <button class="btn-primary" data-detail-action="cross" data-detail-code="${html(item.code)}">交叉验证</button>
+              <button class="btn-ghost" data-detail-toggle="${html(item.code)}">${collapsed ? "展开" : "收起"}</button>
+            </div>
+          </div>
+          ${collapsed ? "" : `<div style="margin-top:8px">
+            <p style="margin-bottom:6px"><strong>结论：</strong>${html(item.conclusion)}</p>
+            <p class="muted" style="margin-bottom:6px"><strong>对应环节：</strong>${html(item.chainPosition)}</p>
+            <p class="muted" style="margin-bottom:6px"><strong>已有证据：</strong>${html(item.evidence)}</p>
+            <p class="muted" style="margin-bottom:6px"><strong>缺失证据：</strong>${html(item.missingProof)}</p>
+            <p class="muted" style="margin-bottom:6px"><strong>行情：</strong>${html(item.quote)}</p>
+            <p class="muted" style="margin-bottom:6px"><strong>证伪条件：</strong>${html(item.falsification)}</p>
+            <p class="muted"><strong>下一步查 3 个来源：</strong>${html(item.nextSources)}</p>
+          </div>`}
+        </div>`;
+      }).join("");
+    }
+
+    function jumpToStockDetail(code) {
+      document.getElementById("stockSearch").value = "";
+      collapsedDetails[code] = false;
+      renderStockDetails();
+      const card = document.querySelector(`[data-detail-card="${code}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        const prev = card.style.borderColor;
+        card.style.borderTop = "2px solid var(--accent)";
+        setTimeout(() => { card.style.borderTop = prev; }, 1500);
+      } else {
+        document.getElementById("stockDetailSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    document.getElementById("stockSearch").addEventListener("input", renderStockDetails);
+    document.getElementById("stockExpandAll").addEventListener("click", () => {
+      stockDetails.forEach(item => { collapsedDetails[item.code] = false; });
+      renderStockDetails();
+    });
+    document.getElementById("stockCollapseAll").addEventListener("click", () => {
+      stockDetails.forEach(item => { collapsedDetails[item.code] = true; });
+      renderStockDetails();
+    });
+    document.getElementById("stockDetailBody").addEventListener("click", async (event) => {
+      const toggle = event.target.closest("[data-detail-toggle]");
+      if (toggle) {
+        const code = toggle.dataset.detailToggle;
+        collapsedDetails[code] = !collapsedDetails[code];
+        renderStockDetails();
+        return;
+      }
+      const btn = event.target.closest("[data-detail-action]");
+      if (!btn) return;
+      const item = stockDetails.find(it => it.code === btn.dataset.detailCode);
+      if (!item) return;
+      await navigator.clipboard.writeText(detailPrompt(item, btn.dataset.detailAction));
+      const original = btn.textContent;
+      btn.textContent = "已复制提示词";
+      setTimeout(() => { btn.textContent = original; }, 900);
+    });
+    renderStockDetails();
+    el.copyNode.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(selectedSummary("all"));
+      el.copyNode.textContent = "已复制";
+      setTimeout(() => { el.copyNode.textContent = "复制节点摘要"; }, 900);
+    });
+
+    render();
+  </script>
 </body>
 </html>

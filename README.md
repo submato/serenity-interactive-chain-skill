@@ -3,7 +3,7 @@
 
 [English version](#english)
 
-与其他仓库不同，Serenity Interactive Chain 使用 Serenity 的逻辑输出一个可交互的 `.canvas.tsx` 文件，能够让你在与 AI 对话中持续完善整个投资地图。
+与其他仓库不同，Serenity Interactive Chain 使用 Serenity 的逻辑输出一个**自包含、可交互的 HTML 页面（默认；也可按需生成 Cursor `.canvas.tsx`）**，能直接在浏览器打开、文字可选中/复制/搜索，并在与 AI 对话中持续完善整个投资地图。
 
 它的核心不是“直接报股票”，而是先看真实的物理系统：业务怎么运转、钱流向哪里、哪一层最难扩产、证据强不强、市场有没有定价，最后才映射到公司。
 
@@ -26,7 +26,7 @@
 
 - 先把复杂公司或生态拆成业务域。
 - 再把每个业务域拆成供应链层级。
-- 默认生成脑图式交互文档。
+- 默认生成自包含 HTML 交互页面（脑图导航 + 节点详情 + 底部个股分析），也可按需生成 Cursor canvas。
 - 支持从任意节点继续递归下钻。
 - 每个节点都有标签：
   - 节点类型
@@ -38,6 +38,8 @@
   - 补证据
   - 找本地市场映射
   - 重新评估
+- 底部「个股分析详情」可搜索、可逐条收起（含全部展开/收起），每只股票卡片带 `重新评估` / `下钻` / `交叉验证`，节点里的股票行有 `查看分析` 跳转。
+- 在 HTML 模式下，动作按钮会复制带文件路径与节点/股票信息的提示词（浏览器无法直接调用 Cursor）。
 - 既适合 Cursor Canvas，也能在 Claude Code / Codex 这类文本环境中使用。
 
 ## HTML 示例
@@ -112,7 +114,7 @@ cp SKILL.md ~/.codex/skills/serenity-interactive-chain/SKILL.md
 
 Serenity Interactive Chain is an Agent Skill for turning companies, industries, and ecosystems into interactive supply-chain chokepoint maps.
 
-Unlike one-shot research outputs, this skill uses the Serenity-style supply-chain logic to generate an interactive `.canvas.tsx` file. The map can then be refined through follow-up conversations with an AI agent, node by node, until the whole investment map becomes sharper.
+Unlike one-shot research outputs, this skill uses the Serenity-style supply-chain logic to generate a **self-contained interactive HTML page by default** (a Cursor `.canvas.tsx` only on request). It opens in any browser with selectable/copyable/searchable text, and can be refined through follow-up conversations with an AI agent, node by node, until the whole investment map becomes sharper.
 
 It deliberately avoids jumping straight from a narrative to tickers. Instead, it follows a slower and cleaner path:
 
@@ -129,7 +131,7 @@ The core question is:
 
 - Splits complex companies or ecosystems into business domains first.
 - Maps each domain into supply-chain layers.
-- Defaults to an interactive mindmap-style document.
+- Defaults to a self-contained interactive HTML page (mindmap nav + node detail + bottom stock-analysis), with Cursor canvas on request.
 - Supports recursive drilldown from any node.
 - Labels every node by:
   - node type
@@ -141,7 +143,9 @@ The core question is:
   - add evidence
   - map local-market stocks
   - re-evaluate the node
-- Works in Cursor Canvas and can also be used in text-first environments such as Claude Code or Codex-style agents.
+- A bottom "stock analysis" section is searchable and per-card collapsible (with expand/collapse all); each stock card has `re-evaluate` / `drill down` / `cross-validate`, and stock rows have a `view analysis` jump button.
+- In HTML mode, action buttons copy a ready-to-paste prompt (with file path and node/stock info) since the browser cannot call Cursor directly.
+- Works in Cursor Canvas and text-first environments such as Claude Code or Codex-style agents.
 
 ## HTML Examples
 
